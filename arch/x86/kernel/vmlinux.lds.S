@@ -103,6 +103,7 @@ PHDRS {
 	percpu PT_LOAD FLAGS(6);        /* RW_ */
 #endif
 	init PT_LOAD FLAGS(7);          /* RWE */
+	//randomized_text PT_LOAD FLAGS(5); /* R_E */
 #endif
 	note PT_NOTE FLAGS(0);          /* ___ */
 }
@@ -141,8 +142,6 @@ SECTIONS
 		*(.text.__x86.indirect_thunk)
 		__indirect_thunk_end = .;
 #endif
-
-		/* End of text section */
 		_etext = .;
 	} :text = 0x9090
 
@@ -211,6 +210,14 @@ SECTIONS
 	} :data
 
 	. = ALIGN(__vvar_page + PAGE_SIZE, PAGE_SIZE);
+#if 0
+	/*
+	 * sections which should be randomized at load time.
+	 */
+	.randomized_text : AT(ADDR(.randomized_text) - LOAD_OFFSET) {
+		KEEP(*(.text.*))
+	} :randomized_text
+#endif
 
 	/* Init code and data - will be freed after init */
 	. = ALIGN(PAGE_SIZE);
@@ -387,6 +394,7 @@ SECTIONS
 	/DISCARD/ : {
 		*(.eh_frame)
 	}
+
 }
 
 
